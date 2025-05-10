@@ -748,7 +748,7 @@ def main():
     with st.sidebar.expander("Advanced Configuration", expanded=False):
         api_url = st.text_input(
             "Rendering Service URL", 
-            value="http://localhost:8000",
+            value="https://video-server-dlz7.onrender.com",
             help="URL of the rendering service (default is fine for most users)"
         )
     
@@ -885,7 +885,7 @@ def main():
                 
                 # Use the default API URL if not provided
                 if not api_url:
-                    api_url = "http://localhost:8000"
+                    api_url = "https://video-server-dlz7.onrender.com"
                 
                 # Send to rendering service
                 rendering_status.markdown("🎥 Processing video...")
