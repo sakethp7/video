@@ -441,33 +441,19 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for better UI
+# Custom CSS for better UI - removed card classes, adjusted spacing
 st.markdown("""
 <style>
     .main-header {
         font-size: 2.5rem;
         color: #1E88E5;
         font-weight: 700;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
     .sub-header {
         font-size: 1.5rem;
         color: #424242;
         margin-bottom: 2rem;
-    }
-    .card {
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-        background-color: white;
-    }
-    .footer {
-        text-align: center;
-        color: #666;
-        font-size: 0.8rem;
-        margin-top: 3rem;
-        padding: 1rem;
     }
     .stButton button {
         background-color: #1E88E5;
@@ -476,11 +462,19 @@ st.markdown("""
         font-weight: bold;
         border: none;
         border-radius: 4px;
+        width: 100%;
     }
     .stTextInput>div>div>input {
         border-radius: 5px;
         padding: 0.75rem;
         border: 1px solid #ddd;
+    }
+    .footer {
+        text-align: center;
+        color: #666;
+        font-size: 0.8rem;
+        margin-top: 3rem;
+        padding: 1rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -511,7 +505,7 @@ def create_agents(llm):
         structured ways that make them accessible to students. You're known for your 
         ability to break down difficult concepts into digestible chunks and for creating 
         content that flows logically from introduction to advanced applications.""",
-        verbose=False,  # Changed to False to reduce terminal output
+        verbose=False,
         llm=llm
     )
 
@@ -525,7 +519,7 @@ def create_agents(llm):
         Manim code that brings abstract mathematical concepts to life through animation.
         You are known for creating perfectly timed animations with NO OVERLAPPING elements and
         clear transitions between concepts.""",
-        verbose=False,  # Changed to False to reduce terminal output
+        verbose=False,
         llm=llm
     )
 
@@ -744,19 +738,9 @@ def render_manim_code(manim_code: ManimCodeOutput, api_url: str):
     except Exception as e:
         return None
 
-# Animation spinner component
-def animated_loader(text="Processing"):
-    import time
-    container = st.empty()
-    for i in range(50):
-        loading_text = text + "." * (i % 4)
-        container.markdown(f"<div style='text-align: center; font-size: 20px; color: #1E88E5;'>{loading_text}</div>", unsafe_allow_html=True)
-        time.sleep(0.1)
-    return container
-
 # Main application function
 def main():
-    # Application header
+    # Application header - no card elements
     st.markdown("<h1 class='main-header'>Math Animation Studio</h1>", unsafe_allow_html=True)
     st.markdown("<p class='sub-header'>Generate beautiful educational videos explaining mathematical concepts using AI</p>", unsafe_allow_html=True)
     
@@ -768,22 +752,19 @@ def main():
             help="URL of the rendering service (default is fine for most users)"
         )
     
-    # Main card for input
-    col1, col2 = st.columns([3, 1])
+    # Input field for mathematical topic - without card wrapper
+    st.text_input(
+        "Enter a mathematical topic or concept",
+        value="",
+        placeholder="E.g., Partial Fractions, Pythagorean Theorem, Derivatives, etc.",
+        key="topic_input"
+    )
     
-    with col1:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
-        topic = st.text_input(
-            "Enter a mathematical topic or concept",
-            value="",
-            placeholder="E.g., Partial Fractions, Pythagorean Theorem, Derivatives, etc."
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
+    # Generate button below the input (not to the side)
+    generate_button = st.button("Generate Animation 🎬", use_container_width=True)
     
-    with col2:
-        st.markdown("<div class='card' style='display: flex; justify-content: center; align-items: center; height: 80px;'>", unsafe_allow_html=True)
-        generate_button = st.button("Generate Animation 🎬", use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+    # Get the topic value from session state
+    topic = st.session_state.topic_input
     
     # Store session state
     if 'video_id' not in st.session_state:
@@ -806,12 +787,10 @@ def main():
         st.session_state.generation_complete = False
         st.session_state.video_id = None
         
-        # Progress container
+        # Progress container - no card wrapper
         progress_container = st.container()
         
         with progress_container:
-            st.markdown("<div class='card'>", unsafe_allow_html=True)
-            
             # Step 1: Content Generation
             st.markdown("#### Step 1: Creating educational content")
             content_progress = st.progress(0)
@@ -827,8 +806,6 @@ def main():
             st.markdown("#### Step 3: Rendering final video")
             rendering_progress = st.progress(0)
             rendering_status = st.empty()
-            
-            st.markdown("</div>", unsafe_allow_html=True)
         
         # Run the generation process
         try:
@@ -932,37 +909,34 @@ def main():
                 rendering_status.markdown("⏸️ Video rendering skipped.")
         
         except Exception as e:
-            st.error(f"An error occurred during generation. Please try again.")
+            st.error("An error occurred during generation. Please try again.")
     
     # Display results after generation is complete
     if st.session_state.generation_complete and st.session_state.video_id:
-        results_container = st.container()
+        st.markdown("### 🎉 Your Math Animation is Ready!")
         
-        with results_container:
-            st.markdown("<div class='card'>", unsafe_allow_html=True)
-            st.markdown("### 🎉 Your Math Animation is Ready!")
-            
-            # Video display
-            if api_url.endswith('/'):
-                api_url = api_url[:-1]
-            
-            video_url = f"{api_url}/video/{st.session_state.video_id}"
-            st.video(video_url)
-            
-            # Download button
-            st.markdown(f"<div style='text-align: center;'><a href='{video_url}' download='math_animation.mp4' target='_blank'><button style='background-color: #1E88E5; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;'>Download Video</button></a></div>", unsafe_allow_html=True)
-            
-            st.markdown("</div>", unsafe_allow_html=True)
-            
-            # Educational content in expander
-            if st.session_state.content:
-                with st.expander("View Educational Content", expanded=False):
-                    st.markdown(st.session_state.content)
-            
-            # Code in expander for those who want to see it
-            if st.session_state.manim_code:
-                with st.expander("View Animation Code", expanded=False):
-                    st.code(st.session_state.manim_code.code, language="python")
+        # Video display without card wrapper
+        if not api_url:
+            api_url = "http://localhost:8000"
+        
+        if api_url.endswith('/'):
+            api_url = api_url[:-1]
+        
+        video_url = f"{api_url}/video/{st.session_state.video_id}"
+        st.video(video_url)
+        
+        # Download button
+        st.markdown(f"<div style='text-align: center;'><a href='{video_url}' download='math_animation.mp4' target='_blank'><button style='background-color: #1E88E5; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; max-width: 300px;'>Download Video</button></a></div>", unsafe_allow_html=True)
+        
+        # Educational content in expander
+        if st.session_state.content:
+            with st.expander("View Educational Content", expanded=False):
+                st.markdown(st.session_state.content)
+        
+        # Code in expander for those who want to see it
+        if st.session_state.manim_code:
+            with st.expander("View Animation Code", expanded=False):
+                st.code(st.session_state.manim_code.code, language="python")
     
     # Footer
     st.markdown("<div class='footer'>Math Animation Studio © 2025 | Powered by AI and Mathematical Visualization</div>", unsafe_allow_html=True)
