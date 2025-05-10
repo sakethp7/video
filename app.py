@@ -488,7 +488,7 @@ class ManimCodeOutput(BaseModel):
 def get_llm():
     return LLM(
         model='anthropic/claude-3-7-sonnet-20250219', 
-        api_key=os.getenv('ANTHROPIC_API_KEY'),
+        api_key=st.secrets['ANTHROPIC_API_KEY'],
         temperature=0.2,
         max_tokens=10000,
         max_completion_tokens=20000
